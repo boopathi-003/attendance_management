@@ -1,70 +1,93 @@
-# Getting Started with Create React App
+# Attendance Management — Web App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+React 18 dashboard for the attendance management API: employee records, daily attendance, and leave tracking, with
+separate admin and user views.
 
-## Available Scripts
+The Spring Boot API it talks to lives in
+[boopathi-003/attendance_management_backend](https://github.com/boopathi-003/attendance_management_backend).
 
-In the project directory, you can run:
+## Stack
 
-### `npm start`
+| | |
+| --- | --- |
+| Framework | React 18 (Create React App, `react-scripts` 5) |
+| Data | Redux Toolkit Query (`@reduxjs/toolkit/query`) |
+| UI | Bootstrap 5, react-bootstrap, Bootstrap Icons |
+| Forms | Formik + Yup |
+| Charts | Chart.js via react-chartjs-2 |
+| Dialogs | SweetAlert2 |
+| Routing | react-router-dom 6 |
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Getting started
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+**Prerequisites**
 
-### `npm test`
+- Node.js 20 or newer
+- The backend API running on `http://localhost:8080`, with a login account created (see the backend README)
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```bash
+npm install
+npm start
+```
 
-### `npm run build`
+The app runs on `http://localhost:3000`. That port matters — the backend's CORS configuration only allows
+`http://localhost:3000` and `:3001`, so serving from any other port breaks every request in the browser.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```bash
+npm run build     # production bundle into build/
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Configuration
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+There is no `.env` file. The API base URL is hardcoded in **two** places and both must be changed together:
 
-### `npm run eject`
+- `src/redux/ApiSlice.jsx` — the RTK Query `baseUrl`
+- `src/components/forms/Login.jsx` — the axios call to `/login`
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+Moving these to a `REACT_APP_API_URL` environment variable is a worthwhile follow-up.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## How it works
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+**Authentication.** `Login` posts to `/login` and receives a raw JWT string. The token goes into `sessionStorage`,
+and the `role` claim is decoded with `jwt-decode` to choose a dashboard. Every later request attaches
+`Authorization: Bearer <token>` via `prepareHeaders` in the API slice. Because it is `sessionStorage`, closing the
+tab logs you out.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+**Routing.** `PrivateRoute` guards the authenticated pages; `PrivateRoutes` bounces an already-logged-in user off
+the login screen to the dashboard for their role.
 
-## Learn More
+| Path | Screen |
+| --- | --- |
+| `/login` | Login form |
+| `/admindashboard` | Stat cards + attendance overview |
+| `/userdashboard` | Currently renders the admin dashboard |
+| `/user` | Employee table — search, pagination, admin-only add/delete |
+| `/leavechart` | Leave records, tabbed by type |
+| `/attendance` | Placeholder — not yet implemented |
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+**Data.** All backend calls are declared in `src/redux/ApiSlice.jsx` and consumed through the generated hooks. List
+screens fetch a whole collection and then filter and paginate in the browser; the API has no search or paging
+endpoints.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Project layout
 
-### Code Splitting
+```
+src/
+  App.js              routing
+  index.js            Redux provider + bootstrap CSS
+  redux/              store and the single RTK Query API slice
+  pages/              route-level screens and the dashboard stat widgets
+  components/         forms, header, sidebar, tables, modals, charts, pagination, route guards
+  css/                one stylesheet per screen
+  assets/             images
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## Known gaps
 
-### Analyzing the Bundle Size
+Tracked so they are not mistaken for regressions — see [`CLAUDE.md`](CLAUDE.md) for the full list.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- Deleting a user updates the table but never calls the API; the row returns on refresh
+- `/attendance` is an empty shell — the posting form is not built
+- `src/App.test.js` is still the CRA template and fails, so CI does not run tests yet
+- Dashboard card counts are partly hardcoded placeholders
+- `LeaveChart.jsx` is not mounted on any route
