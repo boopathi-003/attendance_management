@@ -1,0 +1,20 @@
+.sidebar {
+    height: 100vh;
+    width: auto;
+    overflow-y: auto; 
+    background-color:#f0f0f0;
+}
+
+.navbars.active {
+    border-right: 3px solid #007bff; 
+    background-color: #f0f8ff; 
+    font-size: large;
+}
+
+.navbars {
+    transition: background-color 0.3s, border-right 0.3s;
+}
+
+.navbars:hover {
+    background-color: #e6f0ff; 
+}

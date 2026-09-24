@@ -1,0 +1,30 @@
+.search
+{
+    position: absolute;
+    right: 30px;
+    top:10px;
+}
+.searchbar 
+{
+  outline-color:white;
+  width: 100%;
+}
+
+td {
+    height: 50px;
+    vertical-align: bottom;
+  }
+
+.absent{
+    background-color: #ec3c10;
+    color: aliceblue;
+  }
+
+@media (min-width: 992px) {
+  .toggle {
+    width: 99%;
+    display: flex;
+    margin-left: 0.8%;
+    border-radius: 10px;
+  }
+}

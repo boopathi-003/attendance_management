@@ -1,0 +1,32 @@
+.active{
+    background-color: rgb(161, 226, 226);
+}
+.table-container {
+    max-height: 500px; 
+    overflow-x: auto; 
+}
+
+.table-header th,
+.table-data td {
+    white-space: nowrap; 
+}
+
+
+
+.isactive {
+    
+    color: rgb(160, 248, 160); 
+    padding: 0.2rem;
+    border-radius: 0.25rem;
+    text-align: center;
+    font-weight: bold;
+}
+
+.inactive {
+  
+    color: rgb(253, 134, 112); 
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    text-align: center;
+    font-weight: bold;
+}
